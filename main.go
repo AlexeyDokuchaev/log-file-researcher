@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -45,12 +46,12 @@ func main() {
 	wg.Add(1)
 	go senderProcess()
 
-	//for i := 1; i < 12; i++ {
-	//	tmpCnt, tmpCntErr := cnt, errCnt
-	//	viewFiles(root + strconv.Itoa(i))
-	//	fmt.Println("app done", cnt-tmpCnt, errCnt-tmpCntErr)
-	//}
-	viewFiles(root + "second/SKU")
+	for i := 1; i < 22; i++ {
+		tmpCnt, tmpCntErr := cnt, errCnt
+		fmt.Println(root + strconv.Itoa(i) + "/SKU")
+		viewFiles(root + strconv.Itoa(i) + "/SKU")
+		fmt.Println("app done", cnt-tmpCnt, errCnt-tmpCntErr)
+	}
 
 	for len(messagesChan) > 0 {
 		<-time.After(time.Second)
@@ -100,6 +101,10 @@ func readFile(filename string) {
 
 	defer file.Close()
 
+	if file.Name() == "/Users/morty/dvlpr/SKU/1/SKU/.DS_Store" {
+		return
+	}
+
 	re := regexp.MustCompile("_\\[(.*?)\\].")
 	match := re.FindStringSubmatch(filename)
 	date, _ := time.Parse("02.01.2006", match[1])
@@ -129,15 +134,15 @@ func readFile(filename string) {
 		messagesChan <- json
 		cnt++
 		if cnt%100 == 0 {
-			<-time.After(100 * time.Millisecond)
+			<-time.After(10 * time.Millisecond)
 		}
 		if cnt%10000 == 0 {
-			fmt.Println("r-sts:", cnt)
-			<-time.After(10 * time.Second)
+			fmt.Println(time.Now().Format("15-04-05")+" | r-sts:", cnt)
+			<-time.After(1 * time.Second)
 		}
 		if cnt%50000 == 0 {
 			fmt.Println("r-sts:", cnt)
-			<-time.After(3 * time.Minute)
+			<-time.After(1 * time.Minute)
 		}
 	}
 }
